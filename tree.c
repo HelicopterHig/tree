@@ -163,3 +163,204 @@ int main(int argc, char *argv[])
             else
                 printf("%s", "False commad\n");
         }
+ else if (!strcmp(command, "rem")){
+            scanf("%s", command);
+            if (!strcmp(command, "whole")){
+                removetree(tree);
+                tree = 0;
+                printf("The tree was delete\n");
+            }
+            else if (!strcmp(command, "node")){
+                flag = 10;
+                scanf("%s", command);
+                i = 0;
+                while (command[i]){
+                    if ((!(command[i]>='0'))||(!(command[i]<='9')))
+                        flag = 2;
+                    ++i;
+                }
+                if (flag == 2){
+                    printf("Not correct item");
+                }
+                else if (flag == 10){
+                    sscanf(command, "%d", &numtos);
+                    scanf("%s", command);
+                    if (!strcmp(command, "self")){
+                        if (!rmel(tree, numtos, SELF)) printf("Element not found or has descendant\n");
+                    }
+                    else if (!strcmp(command, "sibling")){
+                        if (!rmel(tree, numtos, SIBLING)) printf("Element not found, has no sibling\n");
+                    }
+                    else if (!strcmp(command, "descendants")){
+                        if (!rmel(tree, numtos, DESCENDANTS)) printf("Element not found\n");
+                    }
+                    else if (!strcmp(command, "family")){
+                        if (!rmel(tree, numtos, FAMILY)) printf("Element not found");
+                    }
+                    else
+                        printf("%s", "False command\n");
+                }
+                else
+                    printf("UNKNOWN ERROR\n");
+                flag = 8;
+            }
+            else printf("%s", "False command\n");
+        }
+        else if (!strcmp(command, "save")){
+            fgets(command, sizeof(command), stdin);
+            c = command;
+            while((*(c))!='\n') ++c;
+            *c = '\0';
+            if ((file = fopen(command, "wb"))!= 0){
+                writenode(tree, file);
+                fclose(file);
+            }
+            else
+                printf("Error creating file\n");
+        }
+        else if (!strcmp(command, "load")){
+            fgets(command, sizeof(command), stdin);
+            c = command;
+            while ((*(c))!='\n') ++c;
+            *c = '\0';
+            if ((file = fopen(command, "rb"))!= 0){
+                if (tree){
+                    removetree(tree);
+                    tree = 0;
+                }
+                fread(&numfee, sizeof(int), 1, file);
+                tree = createroot(numfee);
+                loadnode(tree, file);
+                statistics(tree);
+                maxdepth = maximaldepth(tree, 0);
+                fclose(file);
+            }
+            else
+                printf("File not\n");
+                checkprint(tree, 0);
+                printf("items of nodes: %d. \nitems of internal nodes: %d.\nitem of leaves: %d.\nMaximal depth of tree: %d.\n", nodesnum,interiornum, lsumm, maxdepth);
+
+        }
+        else if (!strcmp(command, "help")){
+            printf("HELP");
+            fflush(stdin);
+            getchar();
+        }
+
+        else if (!strcmp(command, "show")){
+            checkprint(tree, 0);
+            printf("items of nodes: %d. \nitems of internal nodes: %d.\nitem of leaves: %d.\nMaximal depth of tree: %d.\n", nodesnum,interiornum, lsumm, maxdepth);
+
+        }
+        else if (!strcmp(command, "exit"))
+            return 0;
+        else{
+            printf("%s", "False command\n");
+        }
+        fflush(stdin);
+    }
+
+    return 0;
+}
+
+int rmel(node *tree, int numtos, char typedel){
+    static int flag;
+    int tmp = 0;
+    if (tree){
+        if (typedel == SELF){
+            if (!flag)
+                if (tree->left){
+                    if (tree->left->item == numtos){
+                        if ((tree->left->left == 0)&&(tree->left->right ==0)){
+                            tmp = flag = 1;
+                            free(tree->left);
+                            tree->left = 0;
+                        }
+                    }
+                }
+            if (!flag)
+                if (tree->right){
+                    if (tree->right->item == numtos){
+                        if ((tree->right->left == 0)&&(tree->right->right == 0)){
+                            tmp = flag = 1;
+                            free(tree->right);
+                            tree->right = 0;
+                        }
+                    }
+                }
+        }
+
+        else if (typedel == SIBLING){
+            if (!flag)
+                if (tree->left){
+                    if (tree->left->item == numtos){
+                        if (tree->right)
+                            if ((tree->right->left == 0)&&(tree->right->right == 0)){
+                                tmp = flag = 1;
+                                free(tree->right);
+                                tree->right = 0;
+                            }
+                    }
+                }
+            if (!flag)
+                if (tree->right){
+                    if (tree->right->item == numtos){
+                        if (tree->left)
+                            if ((tree->left->left == 0)&&(tree->left->right == 0)){
+                                tmp = flag = 1;
+                                free(tree->left);
+                                tree->left = 0;
+                            }
+                    }
+                }
+        }
+
+        else if (typedel == DESCENDANTS){
+            if (!flag)
+                if (tree->left){
+                    if (tree->left->item == numtos){
+                        if ((tree->left->left)){
+                            removetree(tree->left->left);
+                            tree->left->left = 0;
+                        }
+                        if ((tree->left->right)){
+                            removetree(tree->left->right);
+                            tree->left->right = 0;
+                        }
+                        tmp = flag = 1;
+                    }
+                }
+            if (!flag)
+                if (tree->right){
+                    if (tree->right->item == numtos){
+                        if ((tree->right->left)){
+                            removetree(tree->right->left);
+                            tree->right->left = 0;
+                        }
+                        if ((tree->right->right)){
+                            removetree(tree->right->right);
+                            tree->right->right = 0;
+                        }
+                        tmp = flag = 1;
+                    }
+                }
+        }
+
+        else if (typedel == FAMILY){
+            if (!flag)
+                if (tree->left){
+                    if (tree->left->item == numtos){
+                        removetree(tree->left);
+                        tree->left = 0;
+                        tmp = flag =1;
+                    }
+                }
+            if (!flag)
+                if (tree->right){
+                    if (tree->right->item == numtos){
+                        removetree(tree->right);
+                        tree->right = 0;
+                        tmp = flag = 1;
+                    }
+                }
+        }
