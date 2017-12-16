@@ -1,35 +1,25 @@
-#include <stdio.h>
+ #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct joint{
-    struct joint *parent;
-    struct joint *right;
-    struct joint *left;
+typedef struct node{
+    struct node *parent;
+    struct node *right;
+    struct node *left;
     int item;
-} joint;
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+} node;
 
-typedef struct joint{
-    struct joint *parent;
-    struct joint *right;
-    struct joint *left;
-    int item;
-} joint;
-
-joint* createroot(int item);
-int addjoint(int item, joint* current, int target, char type, int launchflag);
-void checkprint(joint *tree, int n);
-void printmas(joint *tree);
-void statistics(joint *tree);
-int maximaldepth(joint *tree, int n);
-int fheap(joint *tree, int curdepth);
-void writejoint(joint *tree, FILE *file);
-void loadjoint(joint *tree, FILE *file);
-void removetree(joint *tree);
-int rmel(joint *tree, int numtos, char typedel);
+node* createroot(int item);
+int addnode(int item, node* current, int target, char type, int launchflag);
+void checkprint(node *tree, int n);
+void printmas(node *tree);
+void statistics(node *tree);
+int maximaldepth(node *tree, int n);
+int fheap(node *tree, int curdepth);
+void writenode(node *tree, FILE *file);
+void loadnode(node *tree, FILE *file);
+void removetree(node *tree);
+int rmel(node *tree, int numtos, char typedel);
 
 #define PARENT 1
 #define SIBLING 2
@@ -37,13 +27,13 @@ int rmel(joint *tree, int numtos, char typedel);
 #define DESCENDANTS 4
 #define FAMILY 5
 
-int lsumm, interiornum, jointsnum, heap, maxdepth;
+int lsumm, interiornum, nodesnum, heap, maxdepth;
 
 
 int main(int argc, char *argv[])
 {
     int i, numfee, numtos;
-    joint *tree = 0;
+    node *tree = 0;
     FILE *file = 0;
     char command[500],flag = 8, *c=0;
 
@@ -53,7 +43,7 @@ int main(int argc, char *argv[])
         else {
             fread(&numfee, sizeof(int), 1, file);
             tree = createroot(numfee);
-            loadjoint(tree, file);
+            loadnode(tree, file);
             fclose(file);
         }
     }
@@ -62,7 +52,7 @@ int main(int argc, char *argv[])
         printf("No trees were loaded from the command line arguments\n");
 
     while (flag){
-        lsumm = interiornum = jointsnum = maxdepth = 0;
+        lsumm = interiornum = nodesnum = maxdepth = 0;
         statistics(tree);
         maxdepth = maximaldepth(tree, 0);
         heap = fheap(tree, 0);
@@ -94,7 +84,7 @@ int main(int argc, char *argv[])
                     printf("Root already exists\n");
             }
 
-            else if (!strcmp(command, "joint")){
+            else if (!strcmp(command, "node")){
                 flag = 10;
                 scanf("%s", command);
                 i = 0;
@@ -141,7 +131,7 @@ int main(int argc, char *argv[])
                             }
                             else if (flag == 10){
                                 sscanf(command, "%d", &numtos);
-                                if (addjoint(numfee, tree, numtos, PARENT, 1));
+                                if (addnode(numfee, tree, numtos, PARENT, 1));
                                 else printf("No element with items %d or it already has 2 descendants\n", numtos);
                             }
                         }
@@ -160,7 +150,7 @@ int main(int argc, char *argv[])
                         }
                         else if (flag == 10){
                             sscanf(command, "%d", &numtos);
-                            if (addjoint(numfee, tree, numtos, SIBLING, 1));
+                            if (addnode(numfee, tree, numtos, SIBLING, 1));
                             else printf("No element with item %d or it already has a sibling\n", numtos);
                         }
                     }
